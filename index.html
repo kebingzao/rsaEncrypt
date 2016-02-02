@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RSA 加密和解密</title>
+    <script src="js/md5/md5.js"></script>
+    <script src="js/rsa/System.js"></script>
+    <script src="js/rsa/System.IO.js"></script>
+    <script src="js/rsa/System.Text.js"></script>
+    <script src="js/rsa/System.Convert.js"></script>
+    <script src="js/rsa/System.BitConverter.js"></script>
+    <script src="js/rsa/System.BigInt.js"></script>
+    <script src="js/rsa/System.Security.Cryptography.SHA1.js"></script>
+    <script src="js/rsa/System.Security.Cryptography.js"></script>
+    <script src="js/rsa/System.Security.Cryptography.RSA.js"></script>
+    <script src="js/rsa/System.Security.Cryptography.HMACSHA1.js"></script>
+    <script src="js/rsa/System.Security.Cryptography.RijndaelManaged.js"></script>
+    <script src="js/rsa.js"></script>
+    <style>
+        #con {
+            width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .pb20 {
+            margin-bottom: 20px;
+        }
+        #title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        #keyInput {
+            width: 400px;
+        }
+        textarea {
+            width: 400px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+<div id="con">
+    <div id="title" class="pb20">RSA 加解密示例演示(以base64的形式输出)：</div>
+    <div  class="pb20">
+        <div>选择加密的位数(在js中超过512，速度就会比较慢，但是目前只有1024位还没有被破解过):
+        <select id="keySize">
+            <option value="256">256-bit</option>
+            <option value="384">384-bit</option>
+            <option value="512">512-bit</option>
+            <option value="768">768-bit</option>
+            <option value="1024" selected="selected">1024-bit</option>
+        </select><br>
+        </div>
+       rsa key : <textarea id="keyValue"></textarea>
+        <input id="createRSAKey" value="点击一对key" type="button" />
+        <input id="showPrivate" value="显示私钥" type="button" />
+        <input id="showPublic" value="显示公钥" type="button" />
+    </div>
+    <div class="pb20">
+        Padding 方式:
+        <select name="PaddingDropDownList" id="PaddingDropDownList">
+            <option selected="selected" value="PKCS">Direct Encryption (PKCS#1 v1.5)</option>
+            <option value="OAEP">OAEP padding (PKCS#1 v2)</option>
+        </select>
+    </div>
+    <div class="pb20">
+        OriginalText: <textarea id="OriginalText" placeholder="这个是原文区域"></textarea>
+    </div>
+    <div class="pb20">
+        <button id="encrypt">加密</button>
+        <button id="decrypt">解密</button>
+    </div>
+    <div class="pb20">
+        Ciphertext: <textarea id="Ciphertext" placeholder="这个是密文区域"></textarea>
+    </div>
+</div>
+</body>
+<script>
+    var $ = function(id){
+        return document.getElementById(id);
+    };
+    $("keyValue").oninput = function(){
+        $("keyValue").value.trim() && window.rsaUtil.setRsaKeyValue($("keyValue").value.trim());
+    };
+    $("createRSAKey").onclick = function(){
+        window.rsaUtil.setKeySize($("keySize").value);
+        $("keyValue").value = window.rsaUtil.setNewRsaKey();
+    };
+    $("showPrivate").onclick = function(){
+        alert(window.rsaUtil.getPrivateKey());
+    };
+    $("showPublic").onclick = function(){
+        alert(window.rsaUtil.getPublishKey());
+    };
+    $("encrypt").onclick = function(){
+        var originText = $("OriginalText").value.trim();
+        if(!originText){
+            alert("原文不能为空");
+        }else{
+            window.rsaUtil.setPadding($("PaddingDropDownList").options[$("PaddingDropDownList").selectedIndex].value == "OAEP");
+            $("Ciphertext").value = window.rsaUtil.encryptToBase64(originText);
+        }
+    };
+    $("decrypt").onclick = function(){
+        var cipherText = $("Ciphertext").value.trim();
+        if(!cipherText){
+            alert("密文不能为空");
+        }else{
+            window.rsaUtil.setPadding($("PaddingDropDownList").options[$("PaddingDropDownList").selectedIndex].value == "OAEP");
+            $("OriginalText").value = window.rsaUtil.decryptToBase64(cipherText);
+        }
+    };
+</script>
+</html>
