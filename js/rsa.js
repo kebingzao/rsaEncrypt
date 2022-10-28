@@ -1,38 +1,38 @@
-// rsa ¼Ó½âÃÜ·½·¨¼¯
+// rsa åŠ è§£å¯†æ–¹æ³•é›†
 window.rsaUtil = {
-	// rsa µÄÎ»Êı £¨Ä¿Ç°¿ÉÒÔ±»ÆÆ½âµÄÊÇ768Î»£¬ºóÃæ¾ÍÃ»ÓĞÆÆ¹ıÁË£©
+	// rsa çš„ä½æ•° ï¼ˆç›®å‰å¯ä»¥è¢«ç ´è§£çš„æ˜¯768ä½ï¼Œåé¢å°±æ²¡æœ‰ç ´è¿‡äº†ï¼‰
 	_keySize: 1024,
-	// rsa µÄkey, ¼´Ë½Ô¿£¨ÆäÖĞ¹«Ô¿ÆäÊµÊÇË½Ô¿µÄÒ»²¿·Ö¶øÒÑ£©ÒÔxmlµÄ×Ö·û´®ĞÎÊ½´æÔÚ£¬¿ÉÒÔ´ÓÄÚ´æÉÏ¶ÁÈ¡
+	// rsa çš„key, å³ç§é’¥ï¼ˆå…¶ä¸­å…¬é’¥å…¶å®æ˜¯ç§é’¥çš„ä¸€éƒ¨åˆ†è€Œå·²ï¼‰ä»¥xmlçš„å­—ç¬¦ä¸²å½¢å¼å­˜åœ¨ï¼Œå¯ä»¥ä»å†…å­˜ä¸Šè¯»å–
 	_rsaKeyStr: '',
-	// ÊÇ·ñÓĞ¼Ó padding ÀàĞÍ
+	// æ˜¯å¦æœ‰åŠ  padding ç±»å‹
 	doOaepPadding: false,
-	// »ñÈ¡ĞÂµÄrsa provider
+	// è·å–æ–°çš„rsa provider
 	getNewRsaProvider: function (dwKeySize) {
 		// Create a new instance of RSACryptoServiceProvider.
 		if (!dwKeySize) dwKeySize = this._keySize;
 		return new System.Security.Cryptography.RSACryptoServiceProvider(dwKeySize);
 	},
-	// ÖØĞÂÉú³ÉĞÂµÄrsaµÄkey£¬²¢½«Ë½Ô¿µÄÖµ´æÔÚ±¾µØ´æ´¢
+	// é‡æ–°ç”Ÿæˆæ–°çš„rsaçš„keyï¼Œå¹¶å°†ç§é’¥çš„å€¼å­˜åœ¨æœ¬åœ°å­˜å‚¨
 	setNewRsaKey: function(){
 		var rsa = this.getNewRsaProvider();
 		this._rsaKeyStr = rsa.ToXmlString(true);
 		return this._rsaKeyStr;
 	},
-	// »ñÈ¡rsa key
+	// è·å–rsa key
 	getRsaKey: function (includePrivateParameters, rsaKeyStr) {
 		var rsa = this.getNewRsaProvider();
 		// Import parameters from xml.
-		// Ö±½Ó°Ñkey´«¹ıÈ¥£¬Ëû»áÌáÈ¡ÀïÃæµÄĞÅÏ¢£¬°üÀ¨ÊÇ·ñÓĞ¹«Ô¿»òÕßË½Ô¿µÄĞÅÏ¢
+		// ç›´æ¥æŠŠkeyä¼ è¿‡å»ï¼Œä»–ä¼šæå–é‡Œé¢çš„ä¿¡æ¯ï¼ŒåŒ…æ‹¬æ˜¯å¦æœ‰å…¬é’¥æˆ–è€…ç§é’¥çš„ä¿¡æ¯
 		rsa.FromXmlString(rsaKeyStr);
 		// Export RSA key to RSAParameters and include:
-		//    false - ¼ÓÃÜ¹ı³Ì£¬Ö»Òª´«¹«Ô¿¾ÍĞĞÁË£¬¼´ÉÏÃæµÄ rsaKeyStr ÒªÓĞ¹«Ô¿ĞÅÏ¢
-		//    true  - ½âÃÜ¹ı³Ì£¬Òª´«Ë½Ô¿£¬¼´ÉÏÃæµÄ rsaKeyStr ÒªÓĞË½Ô¿ĞÅÏ¢
+		//    false - åŠ å¯†è¿‡ç¨‹ï¼Œåªè¦ä¼ å…¬é’¥å°±è¡Œäº†ï¼Œå³ä¸Šé¢çš„ rsaKeyStr è¦æœ‰å…¬é’¥ä¿¡æ¯
+		//    true  - è§£å¯†è¿‡ç¨‹ï¼Œè¦ä¼ ç§é’¥ï¼Œå³ä¸Šé¢çš„ rsaKeyStr è¦æœ‰ç§é’¥ä¿¡æ¯
 		return rsa.ExportParameters(includePrivateParameters);
 	},
-	// ½øĞĞrsa¼ÓÃÜ
+	// è¿›è¡ŒrsaåŠ å¯†
 	encrypt: function(bytes, publishKey){
 		var doOaepPadding = this.doOaepPadding;
-		// Èç¹ûÃ»ÓĞ´«¹«Ô¿£¬¾ÍÏàµ±ÓÚÊ¹ÓÃ×Ô¼ºµÄ¹«Ô¿
+		// å¦‚æœæ²¡æœ‰ä¼ å…¬é’¥ï¼Œå°±ç›¸å½“äºä½¿ç”¨è‡ªå·±çš„å…¬é’¥
 		publishKey = publishKey || this._rsaKeyStr;
 		var rsa = this.getNewRsaProvider();
 		// Import the RSA Key information.
@@ -40,13 +40,13 @@ window.rsaUtil = {
 		// Encrypt the passed byte array and specify OAEP padding.
 		return rsa.Encrypt(bytes, doOaepPadding);
 	},
-	// ½øĞĞrsa¼ÓÃÜ²¢×ª»¯Îªbase64Êä³ö
+	// è¿›è¡ŒrsaåŠ å¯†å¹¶è½¬åŒ–ä¸ºbase64è¾“å‡º
 	encryptToBase64: function(data,publishKey){
 		var bytes = System.Text.Encoding.UTF8.GetBytes(data);
 		var encryptedBytes = this.encrypt(bytes,publishKey);
 		return System.Convert.ToBase64String(encryptedBytes);
 	},
-	// rsa ½âÃÜ
+	// rsa è§£å¯†
 	decrypt: function(bytes){
 		var doOaepPadding = this.doOaepPadding;
 		var rsa = this.getNewRsaProvider();
@@ -55,29 +55,29 @@ window.rsaUtil = {
 		// Decrypt the passed byte array and specify OAEP padding.
 		return rsa.Decrypt(bytes, doOaepPadding);
 	},
-	// ½øĞĞrsa½âÃÜ²¢×ª»¯Îªbase64Êä³ö
+	// è¿›è¡Œrsaè§£å¯†å¹¶è½¬åŒ–ä¸ºbase64è¾“å‡º
 	decryptToBase64: function(data){
 		var encryptedBytes = System.Convert.FromBase64String(data);
 		var decryptedBytes = this.decrypt(encryptedBytes);
 		return System.Text.Encoding.UTF8.GetString(decryptedBytes);
 	},
-	// »ñÈ¡¹«Ô¿£¨´ÓË½Ô¿£¬Ò²¾ÍÊÇkeyÖĞÌáÈ¡³öÀ´£©
+	// è·å–å…¬é’¥ï¼ˆä»ç§é’¥ï¼Œä¹Ÿå°±æ˜¯keyä¸­æå–å‡ºæ¥ï¼‰
 	getPublishKey: function(){
 		return this._rsaKeyStr.replace(/(<\/Exponent>)(\S+)(<\/RSAKeyValue>)/gm,'$1$3');
 	},
-	// »ñÈ¡Ë½Ô¿£¬ÆäÊµ¾ÍÊÇkey
+	// è·å–ç§é’¥ï¼Œå…¶å®å°±æ˜¯key
 	getPrivateKey: function(){
 		return this._rsaKeyStr;
 	},
-	// ÉèÖÃkey
+	// è®¾ç½®key
 	setRsaKeyValue: function(str){
 		this._rsaKeyStr = str;
 	},
-	// ÉèÖÃ Î»Êı
+	// è®¾ç½® ä½æ•°
 	setKeySize: function(str){
 		this._keySize = parseInt(str);
 	},
-	// ÉèÖÃ padding ·½Ê½
+	// è®¾ç½® padding æ–¹å¼
 	setPadding: function(padding){
 		this.doOaepPadding = padding;
 	}

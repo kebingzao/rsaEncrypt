@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RSA 加解密 和 签名验证</title>
+    <script src="js/crypto-js.js"></script>
+    <script src="js/jsencrypt.js"></script>
+    <style>
+        #con {
+            width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .pb20 {
+            margin-bottom: 20px;
+        }
+        #title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        #keyInput {
+            width: 400px;
+        }
+        textarea {
+            width: 400px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+<div id="con">
+    <div id="title" class="pb20">RSA 加解密 / 签名验签 示例演示：</div><hr>
+    <div class="pb20">
+      <pre>
+        <code>* 这边演示 rsa 的加密和解密，原理很简单，生成一对公钥和私钥，然后用公钥进行解密，最后用私钥进行解密，步骤如下:</code>
+        <code>step 1: 选择加密的位数，并且点击旁边的按钮，生成一对公钥和私钥</code>
+        <code>step 2: 在原文区域填入要加密的文字</code>
+        <code>step 3: 点击加密按钮，会在密文区域生成加密后的密文</code>
+        <code>step 4: 清空原文区域，然后点击解密，这时候会针对密文解密，然后生成原文填入</code>
+        <code>ps : 解密之前，如果对私钥进行修改，这时候会解密失败，原文框显示 false 字样</code>
+      </pre>
+    </div>
+    <div class="pb20">
+        <div>选择加密的位数(在js中超过512，速度就会比较慢，但是目前只有1024位还没有被破解过):
+        <select id="keySize">
+            <option value="256">256-bit</option>
+            <option value="384">384-bit</option>
+            <option value="512">512-bit</option>
+            <option value="768">768-bit</option>
+            <option value="1024" selected="selected">1024-bit</option>
+            <option value="2048">2048-bit</option>
+        </select>
+        <input id="createRSAKey" value="点击生成一对公钥和私钥" type="button" />
+        </div>
+    </div>
+    <div class="pb20">
+      <textarea id="privateKey" placeholder="这边显示私钥"></textarea>
+      <textarea id="publicKey" readonly="readonly" placeholder="这边显示公钥"></textarea>
+    </div>
+    <div class="pb20">
+        <button id="encrypt">加密</button>
+        <button id="decrypt">解密</button>
+    </div>
+    <div class="pb20">
+      <textarea id="originalText" placeholder="这个是原文区域"></textarea>
+      <textarea id="cipherText" placeholder="这个是密文区域"></textarea>
+    </div>
+  <hr>
+  <div class="pb20">
+      <pre>
+        <code>* 这边演示 rsa 的签名和验签，原理很简单，生成一对公钥和私钥，然后用私钥进行签名，最后用公钥进行验签，操作步骤如下:</code>
+        <code>step 1: 选择加密的位数，并且点击旁边的按钮，生成一对公钥和私钥</code>
+        <code>step 2: 在原文区域填入要加密的文字</code>
+        <code>step 3: 点击签名按钮，会在签名区域生成签名</code>
+        <code>step 4: 点击验签，这是就会针对签名，原文进行验证，如果成功就会显示验证成功，否则就会显示验证失败</code>
+        <code>ps : 验签之前，如果对签名或者原文进行调整，那么就会显示验证失败</code>
+      </pre>
+      <pre>
+        <code>这边解释一下原理，首先是签名的过程:</code>
+        <code>step 1: 首先对原文进行 hash 化(本例用 sha256 的 hash 算法)，生成一串 hash 值，也就是 摘要（digest）</code>
+        <code>step 2: 私钥对摘要进行加密，生成 签名 (signature) </code>
+        <code>验签过程如下: </code>
+        <code>step 1: 公钥对 签名 (signature) 进行解密， 这时候就得到 摘要 A（digest）</code>
+        <code>step 2: 同时对原文进行同样的 hash 化(同样是 sha256 的 hash 算法)，得到 摘要 B（digest）</code>
+        <code>step 3: 对比 摘要 A 和 摘要 B， 如果相等，则验证通过， 说明数据没有被篡改， 这个过程中，如果这三个因素有一个发送篡改(原文篡改，hash 算法篡改，签名篡改)，都会导致验证失败</code>
+      </pre>
+  </div>
+  <div class="pb20">
+    <button id="sign">签名</button>
+    <button id="verify">验签</button>
+  </div>
+  <div class="pb20">
+    <textarea id="signText" placeholder="这个是私钥加密后的签名"></textarea>
+    <textarea id="verifyText" placeholder="这个是验签结果"></textarea>
+  </div>
+</div>
+</body>
+<script>
+    const $ = id => document.getElementById(id)
+    // 获取私钥的值
+    const getPrivateValue = () => $("privateKey").value.replace("-----BEGIN RSA PRIVATE KEY-----\n","").replace("\n-----END RSA PRIVATE KEY-----","")
+    // 获取公钥的值
+    const getPublicValue = () => $("publicKey").value.replace("-----BEGIN PUBLIC KEY-----\n","").replace("\n-----END PUBLIC KEY-----","")
+    // 点击生成公钥和私钥
+    $("createRSAKey").onclick = () => {
+        let encrypt = new JSEncrypt({
+          default_key_size: $("keySize").value
+        })
+        encrypt.getKey()
+        $("privateKey").value = encrypt.getPrivateKey()
+        $("publicKey").value = encrypt.getPublicKey()
+    }
+    // 用公钥加密
+    $("encrypt").onclick = () => {
+      let encrypt = new JSEncrypt()
+      encrypt.setPublicKey(getPublicValue())
+      $("cipherText").value = encrypt.encrypt($("originalText").value)
+    }
+    // 用私钥解密
+    $("decrypt").onclick = function(){
+      let encrypt = new JSEncrypt()
+      encrypt.setPrivateKey(getPrivateValue())
+      $("originalText").value = encrypt.decrypt($("cipherText").value)
+    };
+    //=================接下来是签名和验收相关
+    // 私钥签名
+    $("sign").onclick = () => {
+      var encrypt = new JSEncrypt()
+      encrypt.setPrivateKey(getPrivateValue())
+      $("signText").value = encrypt.sign($("originalText").value, CryptoJS.SHA256, 'sha256')
+    }
+    // 使用公钥验签
+    $("verify").onclick = () => {
+      var encrypt = new JSEncrypt()
+      encrypt.setPublicKey(getPublicValue())
+      const isSuccess = encrypt.verify($("originalText").value, $("signText").value, CryptoJS.SHA256)
+      $("verifyText").value = isSuccess ? "验证成功" : "验证失败"
+    }
+</script>
+</html>
